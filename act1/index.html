@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Data Visualization</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; text-align: center; padding: 20px; }
+        h1 { color: #333; }
+        .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 300px;
+            text-align: left;
+            border-left: 5px solid #2ecc71;
+        }
+        .card h3 { margin-top: 0; color: #555; border-bottom: 1px solid #eee; padding-bottom: 10px;}
+        .data-row { margin: 10px 0; font-size: 1.1em; }
+        .label { font-weight: bold; color: #777; }
+        
+        button {
+            margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer;
+            background-color: #3498db; color: white; border: none; border-radius: 5px;
+        }
+        button:hover { background-color: #2980b9; }
+    </style>
+</head>
+<body>
+
+    <h1>IoT Device Dashboard</h1>
+    <p>Displaying the last 2 records from the Sigfox Device</p>
+    
+    <button onclick="fetchData()">Refresh Data</button>
+
+    <div id="dashboard" class="container">
+        <p>Loading data...</p>
+    </div>
+
+    <script>
+        async function fetchData() {
+            const dashboard = document.getElementById('dashboard');
+            
+            try {
+                const response = await fetch('http://localhost:3000/my-api/data');
+                const data = await response.json();
+
+                dashboard.innerHTML = '';
+
+                data.forEach((record, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    let contentHtml = `<h3>Record #${index + 1}</h3>`;
+                    
+                    for (const [key, value] of Object.entries(record)) {
+                        contentHtml += `
+                            <div class="data-row">
+                                <span class="label">${key}:</span> ${value}
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = contentHtml;
+                    dashboard.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error(error);
+                dashboard.innerHTML = '<p style="color:red">Error loading data. Make sure server.js is running.</p>';
+            }
+        }
+
+        fetchData();
+        
+        setInterval(fetchData, 5000);
+    </script>
+</body>
+</html>
